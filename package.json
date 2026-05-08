@@ -1,0 +1,18 @@
+{
+  "name": "html-to-mac-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Create macOS Electron app scaffolds from single-file HTML apps.",
+  "type": "commonjs",
+  "packageManager": "yarn@1.22.22",
+  "bin": {
+    "html-to-mac-app": "./bin/html-to-mac-app.js"
+  },
+  "scripts": {
+    "create-app": "node bin/html-to-mac-app.js",
+    "test": "node bin/html-to-mac-app.js examples/sample.html --out .tmp/sample-app --overwrite --dry-run"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

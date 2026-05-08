@@ -1,0 +1,1683 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connections Creator</title>
+  <style>
+    :root {
+      --yellow: #f9df6d;
+      --green: #a0c35a;
+      --blue: #b0c4ef;
+      --purple: #ba81c5;
+      --tile: #efefe6;
+      --ink: #111111;
+      --muted: #5f5f5f;
+      --line: #d8d8d0;
+      --background: #ffffff;
+      --panel: #fbfbf7;
+      --panel-strong: #f4f4ed;
+      --danger: #a43c36;
+      --focus: #2d66d4;
+      --shadow: 0 18px 46px rgba(17, 17, 17, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--background);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.4;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      min-height: 42px;
+      border: 1px solid var(--ink);
+      border-radius: 8px;
+      background: var(--ink);
+      color: #ffffff;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button.secondary {
+      background: #ffffff;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    button.danger {
+      background: #ffffff;
+      color: var(--danger);
+      border-color: rgba(164, 60, 54, 0.4);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+      transform: none;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      padding: 10px 12px;
+    }
+
+    input:focus,
+    select:focus,
+    button:focus-visible {
+      outline: 3px solid rgba(45, 102, 212, 0.32);
+      outline-offset: 2px;
+      border-color: var(--focus);
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-end;
+      margin-bottom: 18px;
+    }
+
+    .title-block {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.08;
+    }
+
+    h1 {
+      font-size: 2.75rem;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    .status-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      padding: 5px 10px;
+      color: var(--ink);
+      font-size: 0.86rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .chip.complete {
+      background: #eaf3db;
+      border-color: #c5d7a4;
+    }
+
+    .chip.draft {
+      background: #fff8dc;
+      border-color: #ebd889;
+    }
+
+    .chip.unsaved {
+      background: #eef4ff;
+      border-color: #bfd2f7;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(330px, 410px);
+      align-items: start;
+      gap: 18px;
+    }
+
+    .surface {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .editor {
+      padding: 18px;
+    }
+
+    .side {
+      display: grid;
+      gap: 14px;
+    }
+
+    .side-section {
+      padding: 16px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+
+    .section-note {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    label,
+    .legend-label {
+      color: var(--ink);
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .groups {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .group-card {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-top: 6px solid var(--group-color);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .group-card legend {
+      float: left;
+      width: 100%;
+      padding: 0;
+      margin-bottom: 12px;
+    }
+
+    .group-card legend + * {
+      clear: both;
+    }
+
+    .group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .swatch-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 900;
+    }
+
+    .swatch {
+      width: 16px;
+      height: 16px;
+      border: 1px solid rgba(17, 17, 17, 0.22);
+      border-radius: 999px;
+      background: var(--group-color);
+      flex: 0 0 auto;
+    }
+
+    .difficulty-rank {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .button-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .saved-controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .saved-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .meta {
+      min-height: 20px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .message {
+      min-height: 22px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .message.error {
+      color: var(--danger);
+    }
+
+    .preview-wrap {
+      display: grid;
+      gap: 12px;
+    }
+
+    .preview-grid {
+      display: grid;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-rows: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .preview-tile {
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 0;
+      border-radius: 8px;
+      background: var(--tile);
+      color: var(--ink);
+      padding: 8px;
+      text-align: center;
+      font-size: 0.96rem;
+      font-weight: 900;
+      line-height: 1.08;
+      overflow: hidden;
+      overflow-wrap: normal;
+      white-space: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    .preview-text {
+      display: block;
+      max-width: 100%;
+      text-align: center;
+      white-space: pre-line;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    .empty-state {
+      display: grid;
+      place-items: center;
+      min-height: 250px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--muted);
+      padding: 22px;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .warning {
+      display: none;
+      margin: 0 0 12px;
+      border: 1px solid rgba(164, 60, 54, 0.28);
+      border-radius: 8px;
+      background: #fff4f2;
+      color: var(--danger);
+      padding: 10px 12px;
+      font-weight: 800;
+    }
+
+    .warning.visible {
+      display: block;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 960px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .side {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+      }
+
+      .preview-section {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        width: min(100% - 20px, 1180px);
+        padding-top: 16px;
+      }
+
+      .app-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .status-chips {
+        justify-content: flex-start;
+      }
+
+      .groups,
+      .side,
+      .item-grid,
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .editor,
+      .side-section {
+        padding: 14px;
+      }
+
+      .preview-grid {
+        gap: 6px;
+        padding: 6px;
+      }
+
+      .preview-tile {
+        padding: 6px;
+        font-size: 0.82rem;
+      }
+
+      h1 {
+        font-size: 2.05rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="app-header">
+      <div class="title-block">
+        <h1>Connections Creator</h1>
+      </div>
+      <div id="statusChips" class="status-chips" aria-live="polite"></div>
+    </header>
+
+    <div id="storageWarning" class="warning" role="alert"></div>
+
+    <main class="workspace">
+      <section class="surface editor" aria-labelledby="editorHeading">
+        <div class="section-head">
+          <h2 id="editorHeading">Editor</h2>
+          <span class="section-note">4 groups, 16 items</span>
+        </div>
+
+        <div class="field">
+          <label for="puzzleTitle">Puzzle title</label>
+          <input id="puzzleTitle" type="text" autocomplete="off" placeholder="Family Fun">
+        </div>
+
+        <div id="groupEditors" class="groups"></div>
+      </section>
+
+      <aside class="side" aria-label="Puzzle tools">
+        <section class="surface side-section" aria-labelledby="actionsHeading">
+          <div class="section-head">
+            <h2 id="actionsHeading">Actions</h2>
+          </div>
+          <div class="button-grid">
+            <button id="newSetButton" type="button" class="secondary">New Set</button>
+            <button id="saveButton" type="button">Save Draft</button>
+          </div>
+          <p id="message" class="message" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="surface side-section" aria-labelledby="savedHeading">
+          <div class="section-head">
+            <h2 id="savedHeading">Saved Sets</h2>
+            <span id="savedCount" class="section-note">0 saved</span>
+          </div>
+          <div class="saved-controls">
+            <label class="sr-only" for="savedSetsSelect">Saved puzzle sets</label>
+            <select id="savedSetsSelect"></select>
+            <div class="saved-buttons">
+              <button id="loadSetButton" type="button" class="secondary">Load</button>
+              <button id="deleteSetButton" type="button" class="danger">Delete</button>
+            </div>
+          </div>
+          <p id="savedMeta" class="meta"></p>
+        </section>
+
+        <section class="surface side-section preview-section" aria-labelledby="previewHeading">
+          <div class="section-head">
+            <h2 id="previewHeading">Preview</h2>
+            <span id="previewStatus" class="section-note">Draft</span>
+          </div>
+          <div class="preview-wrap">
+            <div id="previewEmpty" class="empty-state">Draft preview unavailable.</div>
+            <div id="previewGrid" class="preview-grid" aria-label="Randomized puzzle grid" hidden></div>
+            <div class="button-stack">
+              <button id="reshuffleButton" type="button" class="secondary" disabled>Reshuffle</button>
+              <button id="downloadGridButton" type="button" disabled>Download Puzzle Grid JPEG</button>
+              <button id="downloadSolutionButton" type="button" disabled>Download Solution JPEG</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const STORAGE_KEY = "connectionsCreator.sets.v1";
+      const EXPORT_SIZE = 1080;
+      const DIFFICULTIES = [
+        { color: "yellow", label: "Yellow", hex: "#f9df6d" },
+        { color: "green", label: "Green", hex: "#a0c35a" },
+        { color: "blue", label: "Blue", hex: "#b0c4ef" },
+        { color: "purple", label: "Purple", hex: "#ba81c5" }
+      ];
+
+      const $ = (selector) => document.querySelector(selector);
+      const elements = {
+        title: $("#puzzleTitle"),
+        groupEditors: $("#groupEditors"),
+        statusChips: $("#statusChips"),
+        storageWarning: $("#storageWarning"),
+        message: $("#message"),
+        savedSetsSelect: $("#savedSetsSelect"),
+        savedCount: $("#savedCount"),
+        savedMeta: $("#savedMeta"),
+        newSetButton: $("#newSetButton"),
+        saveButton: $("#saveButton"),
+        loadSetButton: $("#loadSetButton"),
+        deleteSetButton: $("#deleteSetButton"),
+        previewStatus: $("#previewStatus"),
+        previewEmpty: $("#previewEmpty"),
+        previewGrid: $("#previewGrid"),
+        reshuffleButton: $("#reshuffleButton"),
+        downloadGridButton: $("#downloadGridButton"),
+        downloadSolutionButton: $("#downloadSolutionButton")
+      };
+
+      let savedSets = [];
+      let currentSet = createBlankSet();
+      let lastSavedSnapshot = snapshotSet(currentSet);
+      let storageWarningText = "";
+      let messageTimer = 0;
+      let previewFitFrame = 0;
+      const previewMeasureContext = document.createElement("canvas").getContext("2d");
+
+      initialize();
+
+      function initialize() {
+        buildGroupEditors();
+        savedSets = loadSets();
+        renderAll();
+        attachEvents();
+        if (storageWarningText) {
+          showStorageWarning(storageWarningText);
+        }
+      }
+
+      function attachEvents() {
+        elements.title.addEventListener("input", () => {
+          currentSet.title = elements.title.value;
+          renderDerived();
+        });
+
+        elements.groupEditors.addEventListener("input", (event) => {
+          const input = event.target;
+          if (!(input instanceof HTMLInputElement)) {
+            return;
+          }
+
+          const groupIndex = Number(input.dataset.groupIndex);
+          const itemIndex = Number(input.dataset.itemIndex);
+          const kind = input.dataset.kind;
+          if (!Number.isInteger(groupIndex) || !currentSet.groups[groupIndex]) {
+            return;
+          }
+
+          if (kind === "category") {
+            currentSet.groups[groupIndex].category = input.value;
+          } else if (kind === "item" && Number.isInteger(itemIndex)) {
+            currentSet.groups[groupIndex].items[itemIndex] = input.value;
+          }
+          renderDerived();
+        });
+
+        elements.newSetButton.addEventListener("click", () => {
+          if (!confirmDiscardChanges()) {
+            return;
+          }
+          currentSet = createBlankSet();
+          lastSavedSnapshot = snapshotSet(currentSet);
+          renderAll();
+          setMessage("Started a new blank set.");
+        });
+
+        elements.saveButton.addEventListener("click", saveCurrentSet);
+
+        elements.loadSetButton.addEventListener("click", () => {
+          const id = elements.savedSetsSelect.value;
+          if (id) {
+            loadSet(id);
+          }
+        });
+
+        elements.savedSetsSelect.addEventListener("change", () => {
+          const selected = savedSets.find((set) => set.id === elements.savedSetsSelect.value);
+          elements.savedMeta.textContent = selected ? savedMetaText(selected) : "";
+        });
+
+        elements.deleteSetButton.addEventListener("click", () => {
+          const id = elements.savedSetsSelect.value;
+          if (id) {
+            deleteSet(id);
+          }
+        });
+
+        elements.reshuffleButton.addEventListener("click", () => {
+          if (!isComplete(currentSet)) {
+            return;
+          }
+          reshuffleGridOrder(currentSet);
+          renderDerived();
+          setMessage("Preview reshuffled. Save to keep this order.");
+        });
+
+        elements.downloadGridButton.addEventListener("click", () => {
+          downloadGridJpeg(currentSet);
+        });
+
+        elements.downloadSolutionButton.addEventListener("click", () => {
+          downloadSolutionJpeg(currentSet);
+        });
+
+        if (typeof window.addEventListener === "function") {
+          window.addEventListener("resize", queuePreviewFit);
+        }
+      }
+
+      function createBlankSet() {
+        return {
+          id: null,
+          title: "",
+          groups: DIFFICULTIES.map((difficulty) => ({
+            color: difficulty.color,
+            label: difficulty.label,
+            category: "",
+            items: ["", "", "", ""]
+          })),
+          gridOrder: [],
+          createdAt: null,
+          updatedAt: null
+        };
+      }
+
+      function normalizeSet(raw) {
+        const normalized = createBlankSet();
+        const source = raw && typeof raw === "object" ? raw : {};
+
+        normalized.id = typeof source.id === "string" && source.id.trim() ? source.id : null;
+        normalized.title = typeof source.title === "string" ? source.title : "";
+        normalized.createdAt = typeof source.createdAt === "string" ? source.createdAt : null;
+        normalized.updatedAt = typeof source.updatedAt === "string" ? source.updatedAt : null;
+
+        const sourceGroups = Array.isArray(source.groups) ? source.groups : [];
+        normalized.groups = DIFFICULTIES.map((difficulty, groupIndex) => {
+          const sourceGroup = sourceGroups[groupIndex] && typeof sourceGroups[groupIndex] === "object"
+            ? sourceGroups[groupIndex]
+            : {};
+          const sourceItems = Array.isArray(sourceGroup.items) ? sourceGroup.items : [];
+          return {
+            color: difficulty.color,
+            label: difficulty.label,
+            category: typeof sourceGroup.category === "string" ? sourceGroup.category : "",
+            items: [0, 1, 2, 3].map((itemIndex) => (
+              typeof sourceItems[itemIndex] === "string" ? sourceItems[itemIndex] : ""
+            ))
+          };
+        });
+
+        normalized.gridOrder = Array.isArray(source.gridOrder)
+          ? source.gridOrder.map((ref) => ({
+            groupIndex: Number(ref && ref.groupIndex),
+            itemIndex: Number(ref && ref.itemIndex)
+          }))
+          : [];
+
+        if (!isGridOrderValid(normalized.gridOrder)) {
+          normalized.gridOrder = [];
+        }
+
+        return normalized;
+      }
+
+      function trimValue(value) {
+        return String(value == null ? "" : value).trim();
+      }
+
+      function trimmedSetForStorage(set) {
+        const normalized = normalizeSet(set);
+        normalized.title = trimValue(normalized.title);
+        normalized.groups = normalized.groups.map((group, index) => ({
+          color: DIFFICULTIES[index].color,
+          label: DIFFICULTIES[index].label,
+          category: trimValue(group.category),
+          items: group.items.map(trimValue)
+        }));
+        normalized.gridOrder = isGridOrderValid(normalized.gridOrder) ? normalized.gridOrder : [];
+        return normalized;
+      }
+
+      function cloneSet(set) {
+        return normalizeSet(JSON.parse(JSON.stringify(set)));
+      }
+
+      function snapshotSet(set) {
+        return JSON.stringify(normalizeSet(set));
+      }
+
+      function hasUnsavedChanges() {
+        return snapshotSet(currentSet) !== lastSavedSnapshot;
+      }
+
+      function isComplete(set) {
+        return Boolean(
+          trimValue(set.title) &&
+          set.groups.every((group) => (
+            trimValue(group.category) &&
+            group.items.every((item) => trimValue(item))
+          ))
+        );
+      }
+
+      function getAllItemRefs() {
+        const refs = [];
+        for (let groupIndex = 0; groupIndex < 4; groupIndex += 1) {
+          for (let itemIndex = 0; itemIndex < 4; itemIndex += 1) {
+            refs.push({ groupIndex, itemIndex });
+          }
+        }
+        return refs;
+      }
+
+      function refKey(ref) {
+        return `${ref.groupIndex}:${ref.itemIndex}`;
+      }
+
+      function isGridOrderValid(order) {
+        if (!Array.isArray(order) || order.length !== 16) {
+          return false;
+        }
+        const seen = new Set();
+        return order.every((ref) => {
+          const groupIndex = Number(ref && ref.groupIndex);
+          const itemIndex = Number(ref && ref.itemIndex);
+          const key = `${groupIndex}:${itemIndex}`;
+          const valid = Number.isInteger(groupIndex) &&
+            Number.isInteger(itemIndex) &&
+            groupIndex >= 0 &&
+            groupIndex < 4 &&
+            itemIndex >= 0 &&
+            itemIndex < 4 &&
+            !seen.has(key);
+          if (valid) {
+            seen.add(key);
+          }
+          return valid;
+        });
+      }
+
+      function ensureGridOrder(set) {
+        if (!isComplete(set)) {
+          return false;
+        }
+        if (isGridOrderValid(set.gridOrder)) {
+          return false;
+        }
+        set.gridOrder = shuffledRefs();
+        return true;
+      }
+
+      function reshuffleGridOrder(set) {
+        const previous = isGridOrderValid(set.gridOrder) ? set.gridOrder.map(refKey).join("|") : "";
+        let next = shuffledRefs();
+        let nextKey = next.map(refKey).join("|");
+        let attempts = 0;
+        while (previous && previous === nextKey && attempts < 8) {
+          next = shuffledRefs();
+          nextKey = next.map(refKey).join("|");
+          attempts += 1;
+        }
+        if (previous && previous === nextKey) {
+          next.push(next.shift());
+        }
+        set.gridOrder = next;
+      }
+
+      function shuffledRefs() {
+        const refs = getAllItemRefs();
+        for (let index = refs.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          const temp = refs[index];
+          refs[index] = refs[swapIndex];
+          refs[swapIndex] = temp;
+        }
+        return refs;
+      }
+
+      function resolveGridItems(set) {
+        ensureGridOrder(set);
+        if (!isGridOrderValid(set.gridOrder)) {
+          return [];
+        }
+        return set.gridOrder.map((ref) => trimValue(set.groups[ref.groupIndex].items[ref.itemIndex]));
+      }
+
+      function loadSets() {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (!stored) {
+            return [];
+          }
+          const parsed = JSON.parse(stored);
+          if (!Array.isArray(parsed)) {
+            throw new Error("Stored value is not a list.");
+          }
+          return parsed
+            .map(normalizeSet)
+            .filter((set) => set.id)
+            .sort(compareUpdatedDescending);
+        } catch (error) {
+          storageWarningText = "Saved data could not be read, so this session started with an empty saved list.";
+          return [];
+        }
+      }
+
+      function saveSets() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(savedSets));
+          return true;
+        } catch (error) {
+          setMessage("Could not write to local storage. Your browser may be blocking saved data.", true);
+          return false;
+        }
+      }
+
+      function compareUpdatedDescending(a, b) {
+        return String(b.updatedAt || b.createdAt || "").localeCompare(String(a.updatedAt || a.createdAt || ""));
+      }
+
+      function saveCurrentSet() {
+        if (isComplete(currentSet)) {
+          ensureGridOrder(currentSet);
+        }
+
+        const now = new Date().toISOString();
+        const saved = trimmedSetForStorage(currentSet);
+        if (!saved.id) {
+          saved.id = createId();
+        }
+        if (!saved.createdAt) {
+          saved.createdAt = now;
+        }
+        saved.updatedAt = now;
+
+        const existingIndex = savedSets.findIndex((set) => set.id === saved.id);
+        if (existingIndex >= 0) {
+          savedSets[existingIndex] = saved;
+        } else {
+          savedSets.push(saved);
+        }
+        savedSets.sort(compareUpdatedDescending);
+
+        if (!saveSets()) {
+          return;
+        }
+
+        currentSet = cloneSet(saved);
+        lastSavedSnapshot = snapshotSet(currentSet);
+        renderAll();
+        setMessage(isComplete(currentSet) ? "Complete set saved." : "Draft saved.");
+      }
+
+      function loadSet(id) {
+        const saved = savedSets.find((set) => set.id === id);
+        if (!saved) {
+          return;
+        }
+        if (!confirmDiscardChanges()) {
+          return;
+        }
+        currentSet = cloneSet(saved);
+        if (isComplete(currentSet)) {
+          ensureGridOrder(currentSet);
+        }
+        lastSavedSnapshot = snapshotSet(saved);
+        renderAll();
+        setMessage("Loaded saved set.");
+      }
+
+      function deleteSet(id) {
+        const saved = savedSets.find((set) => set.id === id);
+        if (!saved) {
+          return;
+        }
+
+        const title = trimValue(saved.title) || "Untitled draft";
+        const extra = currentSet.id === id && hasUnsavedChanges()
+          ? " This will also clear unsaved edits for this set."
+          : "";
+        if (!window.confirm(`Delete "${title}"?${extra}`)) {
+          return;
+        }
+
+        savedSets = savedSets.filter((set) => set.id !== id);
+        if (!saveSets()) {
+          return;
+        }
+
+        if (currentSet.id === id) {
+          currentSet = createBlankSet();
+          lastSavedSnapshot = snapshotSet(currentSet);
+          setMessage("Deleted the set and cleared the editor.");
+        } else {
+          setMessage("Deleted saved set.");
+        }
+        renderAll();
+      }
+
+      function createId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          return window.crypto.randomUUID();
+        }
+        return `set-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      }
+
+      function confirmDiscardChanges() {
+        if (!hasUnsavedChanges()) {
+          return true;
+        }
+        return window.confirm("Discard unsaved changes?");
+      }
+
+      function buildGroupEditors() {
+        const fragment = document.createDocumentFragment();
+        DIFFICULTIES.forEach((difficulty, groupIndex) => {
+          const fieldset = document.createElement("fieldset");
+          fieldset.className = "group-card";
+          fieldset.style.setProperty("--group-color", difficulty.hex);
+
+          const legend = document.createElement("legend");
+          const heading = document.createElement("div");
+          heading.className = "group-title";
+
+          const labelWrap = document.createElement("span");
+          labelWrap.className = "swatch-label";
+
+          const swatch = document.createElement("span");
+          swatch.className = "swatch";
+          swatch.setAttribute("aria-hidden", "true");
+
+          const label = document.createElement("span");
+          label.textContent = difficulty.label;
+
+          const rank = document.createElement("span");
+          rank.className = "difficulty-rank";
+          rank.textContent = `Level ${groupIndex + 1}`;
+
+          labelWrap.append(swatch, label);
+          heading.append(labelWrap, rank);
+          legend.append(heading);
+          fieldset.append(legend);
+
+          const categoryField = document.createElement("div");
+          categoryField.className = "field";
+
+          const categoryLabel = document.createElement("label");
+          categoryLabel.setAttribute("for", `category-${groupIndex}`);
+          categoryLabel.textContent = "Category name";
+
+          const categoryInput = document.createElement("input");
+          categoryInput.id = `category-${groupIndex}`;
+          categoryInput.type = "text";
+          categoryInput.autocomplete = "off";
+          categoryInput.placeholder = categoryPlaceholder(groupIndex);
+          categoryInput.dataset.kind = "category";
+          categoryInput.dataset.groupIndex = String(groupIndex);
+
+          categoryField.append(categoryLabel, categoryInput);
+          fieldset.append(categoryField);
+
+          const itemGrid = document.createElement("div");
+          itemGrid.className = "item-grid";
+          [0, 1, 2, 3].forEach((itemIndex) => {
+            const itemField = document.createElement("div");
+            itemField.className = "mini-field";
+
+            const itemLabel = document.createElement("label");
+            itemLabel.setAttribute("for", `item-${groupIndex}-${itemIndex}`);
+            itemLabel.textContent = `Item ${itemIndex + 1}`;
+
+            const itemInput = document.createElement("input");
+            itemInput.id = `item-${groupIndex}-${itemIndex}`;
+            itemInput.type = "text";
+            itemInput.autocomplete = "off";
+            itemInput.dataset.kind = "item";
+            itemInput.dataset.groupIndex = String(groupIndex);
+            itemInput.dataset.itemIndex = String(itemIndex);
+
+            itemField.append(itemLabel, itemInput);
+            itemGrid.append(itemField);
+          });
+          fieldset.append(itemGrid);
+          fragment.append(fieldset);
+        });
+
+        elements.groupEditors.append(fragment);
+      }
+
+      function categoryPlaceholder(groupIndex) {
+        return [
+          "Things you wear on your feet",
+          "Types of fruit",
+          "Things in space",
+          "Words after snow"
+        ][groupIndex];
+      }
+
+      function renderAll() {
+        renderEditorValues();
+        renderSavedSets();
+        renderDerived();
+      }
+
+      function renderEditorValues() {
+        elements.title.value = currentSet.title;
+        currentSet.groups.forEach((group, groupIndex) => {
+          const categoryInput = $(`#category-${groupIndex}`);
+          if (categoryInput) {
+            categoryInput.value = group.category;
+          }
+          group.items.forEach((item, itemIndex) => {
+            const itemInput = $(`#item-${groupIndex}-${itemIndex}`);
+            if (itemInput) {
+              itemInput.value = item;
+            }
+          });
+        });
+      }
+
+      function renderDerived() {
+        renderPreview();
+        renderActionState();
+        renderStatus();
+      }
+
+      function renderStatus() {
+        const complete = isComplete(currentSet);
+        const unsaved = hasUnsavedChanges();
+        const chips = [
+          chip(complete ? "Complete" : "Draft", complete ? "complete" : "draft")
+        ];
+
+        if (unsaved) {
+          chips.push(chip("Unsaved changes", "unsaved"));
+        } else if (currentSet.id) {
+          chips.push(chip("Saved", ""));
+        } else {
+          chips.push(chip("New set", ""));
+        }
+
+        elements.statusChips.innerHTML = chips.join("");
+        elements.saveButton.textContent = complete ? "Save Set" : "Save Draft";
+      }
+
+      function chip(text, modifier) {
+        return `<span class="chip ${modifier}">${escapeHtml(text)}</span>`;
+      }
+
+      function renderActionState() {
+        const complete = isComplete(currentSet);
+        elements.reshuffleButton.disabled = !complete;
+        elements.downloadGridButton.disabled = !complete;
+        elements.downloadSolutionButton.disabled = !complete;
+        elements.previewStatus.textContent = complete ? "Complete" : "Draft";
+      }
+
+      function renderSavedSets() {
+        elements.savedSetsSelect.innerHTML = "";
+        elements.savedCount.textContent = `${savedSets.length} saved`;
+        const hasSavedSets = savedSets.length > 0;
+        elements.loadSetButton.disabled = !hasSavedSets;
+        elements.deleteSetButton.disabled = !hasSavedSets;
+
+        if (!hasSavedSets) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "No saved sets yet";
+          elements.savedSetsSelect.append(option);
+          elements.savedMeta.textContent = "";
+          return;
+        }
+
+        savedSets.forEach((set) => {
+          const option = document.createElement("option");
+          option.value = set.id;
+          option.textContent = savedOptionLabel(set);
+          elements.savedSetsSelect.append(option);
+        });
+
+        const selectedId = currentSet.id && savedSets.some((set) => set.id === currentSet.id)
+          ? currentSet.id
+          : savedSets[0].id;
+        elements.savedSetsSelect.value = selectedId;
+        const selected = savedSets.find((set) => set.id === selectedId);
+        elements.savedMeta.textContent = selected ? savedMetaText(selected) : "";
+      }
+
+      function savedOptionLabel(set) {
+        const title = trimValue(set.title) || "Untitled draft";
+        const status = isComplete(set) ? "Complete" : "Draft";
+        return `${title} - ${status}`;
+      }
+
+      function savedMetaText(set) {
+        const date = set.updatedAt ? new Date(set.updatedAt) : null;
+        if (!date || Number.isNaN(date.getTime())) {
+          return "";
+        }
+        return `Updated ${date.toLocaleString()}`;
+      }
+
+      function renderPreview() {
+        if (!isComplete(currentSet)) {
+          elements.previewEmpty.hidden = false;
+          elements.previewGrid.hidden = true;
+          elements.previewGrid.innerHTML = "";
+          return;
+        }
+
+        ensureGridOrder(currentSet);
+        const items = resolveGridItems(currentSet);
+        elements.previewGrid.innerHTML = "";
+        items.forEach((item) => {
+          const tile = document.createElement("div");
+          tile.className = "preview-tile";
+          tile.dataset.itemText = item;
+
+          const text = document.createElement("span");
+          text.className = "preview-text";
+          text.textContent = item;
+
+          tile.append(text);
+          elements.previewGrid.append(tile);
+        });
+        elements.previewEmpty.hidden = true;
+        elements.previewGrid.hidden = false;
+        queuePreviewFit();
+      }
+
+      function queuePreviewFit() {
+        if (elements.previewGrid.hidden) {
+          return;
+        }
+
+        if (previewFitFrame && typeof window.cancelAnimationFrame === "function") {
+          window.cancelAnimationFrame(previewFitFrame);
+        }
+
+        const fit = () => {
+          previewFitFrame = 0;
+          fitPreviewTiles();
+        };
+
+        if (typeof window.requestAnimationFrame === "function") {
+          previewFitFrame = window.requestAnimationFrame(fit);
+        } else {
+          fit();
+        }
+      }
+
+      function fitPreviewTiles() {
+        const tiles = elements.previewGrid.querySelectorAll
+          ? Array.from(elements.previewGrid.querySelectorAll(".preview-tile"))
+          : Array.from(elements.previewGrid.children || []);
+
+        tiles.forEach((tile) => {
+          const textElement = tile.querySelector
+            ? tile.querySelector(".preview-text")
+            : tile.children && tile.children[0];
+          if (!textElement) {
+            return;
+          }
+
+          const tileWidth = tile.clientWidth || tile.offsetWidth || 0;
+          const tileHeight = tile.clientHeight || tile.offsetHeight || 0;
+          if (!tileWidth || !tileHeight) {
+            return;
+          }
+
+          const styles = typeof window.getComputedStyle === "function"
+            ? window.getComputedStyle(tile)
+            : null;
+          const horizontalPadding = styles
+            ? parseFloat(styles.paddingLeft || "0") + parseFloat(styles.paddingRight || "0")
+            : 16;
+          const verticalPadding = styles
+            ? parseFloat(styles.paddingTop || "0") + parseFloat(styles.paddingBottom || "0")
+            : 16;
+          const box = {
+            x: 0,
+            y: 0,
+            width: Math.max(1, tileWidth - horizontalPadding),
+            height: Math.max(1, tileHeight - verticalPadding)
+          };
+          const maxFont = Math.max(10, Math.min(18, Math.floor(box.width * 0.2)));
+          const fit = fitTextToBox(previewMeasureContext, tile.dataset.itemText || textElement.textContent, box, {
+            maxFont,
+            absoluteMinFont: 1,
+            weight: 900,
+            lineHeight: 1.08
+          });
+
+          textElement.textContent = fit.lines.join("\n");
+          textElement.style.fontSize = `${fit.fontSize}px`;
+          textElement.style.lineHeight = `${fit.lineHeight}px`;
+        });
+      }
+
+      function setMessage(text, isError) {
+        window.clearTimeout(messageTimer);
+        elements.message.textContent = text;
+        elements.message.classList.toggle("error", Boolean(isError));
+        if (text) {
+          messageTimer = window.setTimeout(() => {
+            elements.message.textContent = "";
+            elements.message.classList.remove("error");
+          }, 5200);
+        }
+      }
+
+      function showStorageWarning(text) {
+        elements.storageWarning.textContent = text;
+        elements.storageWarning.classList.add("visible");
+      }
+
+      async function downloadGridJpeg(set) {
+        if (!isComplete(set)) {
+          return;
+        }
+
+        try {
+          ensureGridOrder(set);
+          const canvas = createExportCanvas();
+          const ctx = canvas.getContext("2d");
+          const background = "#ffffff";
+          ctx.fillStyle = background;
+          ctx.fillRect(0, 0, EXPORT_SIZE, EXPORT_SIZE);
+
+          drawWrappedText(ctx, trimValue(set.title), {
+            x: 72,
+            y: 48,
+            width: EXPORT_SIZE - 144,
+            height: 118
+          }, {
+            maxFont: 56,
+            minFont: 28,
+            weight: 900,
+            color: "#111111",
+            align: "center",
+            verticalAlign: "middle",
+            maxLines: 2,
+            lineHeight: 1.08
+          });
+
+          const gridSize = 820;
+          const gridX = (EXPORT_SIZE - gridSize) / 2;
+          const gridY = 210;
+          const gap = 18;
+          const tileSize = (gridSize - gap * 3) / 4;
+          const items = resolveGridItems(set);
+
+          items.forEach((item, index) => {
+            const col = index % 4;
+            const row = Math.floor(index / 4);
+            const x = gridX + col * (tileSize + gap);
+            const y = gridY + row * (tileSize + gap);
+            drawRoundedRect(ctx, x, y, tileSize, tileSize, 20, "#efefe6");
+            drawWrappedText(ctx, item, {
+              x: x + 16,
+              y: y + 16,
+              width: tileSize - 32,
+              height: tileSize - 32
+            }, {
+              maxFont: 38,
+              absoluteMinFont: 1,
+              weight: 900,
+              color: "#111111",
+              align: "center",
+              verticalAlign: "middle",
+              lineHeight: 1.08
+            });
+          });
+
+          await downloadCanvas(canvas, `${safeFilename(set.title)}-grid.jpg`);
+          setMessage("Puzzle grid JPEG downloaded.");
+        } catch (error) {
+          setMessage("Could not generate the puzzle grid JPEG.", true);
+        }
+      }
+
+      async function downloadSolutionJpeg(set) {
+        if (!isComplete(set)) {
+          return;
+        }
+
+        try {
+          const canvas = createExportCanvas();
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, EXPORT_SIZE, EXPORT_SIZE);
+
+          drawWrappedText(ctx, trimValue(set.title), {
+            x: 72,
+            y: 42,
+            width: EXPORT_SIZE - 144,
+            height: 110
+          }, {
+            maxFont: 54,
+            minFont: 28,
+            weight: 900,
+            color: "#111111",
+            align: "center",
+            verticalAlign: "middle",
+            maxLines: 2,
+            lineHeight: 1.08
+          });
+
+          const marginX = 72;
+          const rowsTop = 178;
+          const rowsBottom = 74;
+          const rowGap = 22;
+          const rowWidth = EXPORT_SIZE - marginX * 2;
+          const rowHeight = (EXPORT_SIZE - rowsTop - rowsBottom - rowGap * 3) / 4;
+
+          DIFFICULTIES.forEach((difficulty, index) => {
+            const group = set.groups[index];
+            const rowY = rowsTop + index * (rowHeight + rowGap);
+            drawRoundedRect(ctx, marginX, rowY, rowWidth, rowHeight, 20, difficulty.hex);
+
+            drawWrappedText(ctx, trimValue(group.category), {
+              x: marginX + 42,
+              y: rowY + 30,
+              width: rowWidth - 84,
+              height: 62
+            }, {
+              maxFont: 38,
+              minFont: 20,
+              weight: 900,
+              color: "#111111",
+              align: "center",
+              verticalAlign: "middle",
+              maxLines: 2,
+              lineHeight: 1.08
+            });
+
+            const items = group.items
+              .map(trimValue)
+              .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+            drawFittedLineOrWrap(ctx, items.join(", "), {
+              x: marginX + 42,
+              y: rowY + 104,
+              width: rowWidth - 84,
+              height: rowHeight - 122
+            }, {
+              maxFont: 28,
+              minFont: 15,
+              weight: 700,
+              color: "#111111",
+              align: "center",
+              lineHeight: 1.12
+            });
+          });
+
+          await downloadCanvas(canvas, `${safeFilename(set.title)}-solution.jpg`);
+          setMessage("Solution JPEG downloaded.");
+        } catch (error) {
+          setMessage("Could not generate the solution JPEG.", true);
+        }
+      }
+
+      function createExportCanvas() {
+        const canvas = document.createElement("canvas");
+        canvas.width = EXPORT_SIZE;
+        canvas.height = EXPORT_SIZE;
+        return canvas;
+      }
+
+      function drawRoundedRect(ctx, x, y, width, height, radius, color) {
+        const safeRadius = Math.min(radius, width / 2, height / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + safeRadius, y);
+        ctx.lineTo(x + width - safeRadius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
+        ctx.lineTo(x + width, y + height - safeRadius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height);
+        ctx.lineTo(x + safeRadius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
+        ctx.lineTo(x, y + safeRadius);
+        ctx.quadraticCurveTo(x, y, x + safeRadius, y);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+      }
+
+      function drawFittedLineOrWrap(ctx, text, box, options) {
+        const cleanText = trimValue(text);
+        for (let size = options.maxFont; size >= options.minFont; size -= 1) {
+          setCanvasFont(ctx, size, options.weight);
+          if (ctx.measureText(cleanText).width <= box.width && size * 1.12 <= box.height) {
+            ctx.fillStyle = options.color || "#111111";
+            ctx.textAlign = options.align || "center";
+            ctx.textBaseline = "middle";
+            const x = textXForAlign(box, options.align || "center");
+            ctx.fillText(cleanText, x, box.y + box.height / 2);
+            return;
+          }
+        }
+
+        drawWrappedText(ctx, cleanText, box, {
+          maxFont: Math.min(22, options.maxFont),
+          minFont: 11,
+          weight: options.weight,
+          color: options.color,
+          align: options.align || "center",
+          verticalAlign: "middle",
+          maxLines: 3,
+          lineHeight: options.lineHeight || 1.12
+        });
+      }
+
+      function drawWrappedText(ctx, text, box, options) {
+        const settings = Object.assign({
+          maxFont: 32,
+          absoluteMinFont: 1,
+          weight: 700,
+          color: "#111111",
+          align: "center",
+          verticalAlign: "middle",
+          lineHeight: 1.12
+        }, options || {});
+        if (options && options.absoluteMinFont == null && options.minFont != null) {
+          settings.absoluteMinFont = options.minFont;
+        }
+        const fit = fitTextToBox(ctx, text, box, settings);
+        drawLines(ctx, fit.lines, box, settings, fit.fontSize, fit.lineHeight);
+      }
+
+      function fitTextToBox(ctx, text, box, options) {
+        const settings = Object.assign({
+          maxFont: 32,
+          absoluteMinFont: 1,
+          weight: 700,
+          maxLines: Infinity,
+          lineHeight: 1.12
+        }, options || {});
+        if (options && options.absoluteMinFont == null && options.minFont != null) {
+          settings.absoluteMinFont = options.minFont;
+        }
+        const cleanText = trimValue(text);
+        const maxFont = Math.max(settings.absoluteMinFont, Math.floor(settings.maxFont));
+        const maxLines = Number.isFinite(settings.maxLines) ? settings.maxLines : Infinity;
+
+        for (let size = maxFont; size >= settings.absoluteMinFont; size -= 1) {
+          setCanvasFont(ctx, size, settings.weight);
+          const lines = wrapLines(ctx, cleanText, box.width);
+          const lineHeight = Math.ceil(size * settings.lineHeight);
+          const totalHeight = lines.length * lineHeight;
+          const widest = widestLine(ctx, lines);
+          if (
+            lines.length <= maxLines &&
+            totalHeight <= box.height &&
+            widest <= box.width + 0.5
+          ) {
+            return { lines, fontSize: size, lineHeight };
+          }
+        }
+
+        const fallbackSize = Math.max(1, settings.absoluteMinFont);
+        setCanvasFont(ctx, fallbackSize, settings.weight);
+        const fallbackLineHeight = Math.max(1, Math.ceil(fallbackSize * settings.lineHeight));
+        const fallbackMaxLines = Number.isFinite(maxLines)
+          ? Math.max(1, Math.min(maxLines, Math.floor(box.height / fallbackLineHeight)))
+          : Infinity;
+        const lines = wrapLines(ctx, cleanText, box.width).slice(0, fallbackMaxLines);
+        return { lines, fontSize: fallbackSize, lineHeight: fallbackLineHeight };
+      }
+
+      function setCanvasFont(ctx, size, weight) {
+        ctx.font = `${weight || 700} ${size}px Arial, Helvetica, sans-serif`;
+      }
+
+      function wrapLines(ctx, text, maxWidth) {
+        const words = trimValue(text).split(/\s+/).filter(Boolean);
+        if (!words.length) {
+          return [""];
+        }
+        const lines = [];
+        let line = "";
+
+        words.forEach((word) => {
+          const candidate = line ? `${line} ${word}` : word;
+          if (!line || ctx.measureText(candidate).width <= maxWidth) {
+            line = candidate;
+          } else {
+            lines.push(line);
+            line = word;
+          }
+        });
+
+        if (line) {
+          lines.push(line);
+        }
+        return lines;
+      }
+
+      function widestLine(ctx, lines) {
+        return lines.reduce((widest, line) => Math.max(widest, ctx.measureText(line).width), 0);
+      }
+
+      function drawLines(ctx, lines, box, settings, size, lineHeight) {
+        ctx.fillStyle = settings.color;
+        ctx.textAlign = settings.align;
+        ctx.textBaseline = "middle";
+        setCanvasFont(ctx, size, settings.weight);
+
+        const totalHeight = lines.length * lineHeight;
+        let startY = box.y + lineHeight / 2;
+        if (settings.verticalAlign === "middle") {
+          startY = box.y + (box.height - totalHeight) / 2 + lineHeight / 2;
+        } else if (settings.verticalAlign === "bottom") {
+          startY = box.y + box.height - totalHeight + lineHeight / 2;
+        }
+
+        const x = textXForAlign(box, settings.align);
+        lines.forEach((line, index) => {
+          ctx.fillText(line, x, startY + index * lineHeight);
+        });
+      }
+
+      function textXForAlign(box, align) {
+        if (align === "left") {
+          return box.x;
+        }
+        if (align === "right") {
+          return box.x + box.width;
+        }
+        return box.x + box.width / 2;
+      }
+
+      function safeFilename(title) {
+        const safe = trimValue(title)
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        return safe || "puzzle";
+      }
+
+      function downloadCanvas(canvas, filename) {
+        return new Promise((resolve, reject) => {
+          if (typeof canvas.toBlob === "function") {
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                reject(new Error("Canvas export returned no data."));
+                return;
+              }
+              const url = URL.createObjectURL(blob);
+              triggerDownload(url, filename);
+              window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+              resolve();
+            }, "image/jpeg", 0.92);
+          } else {
+            try {
+              const url = canvas.toDataURL("image/jpeg", 0.92);
+              triggerDownload(url, filename);
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          }
+        });
+      }
+
+      function triggerDownload(url, filename) {
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.rel = "noopener";
+        document.body.append(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, (char) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "\"": "&quot;",
+          "'": "&#39;"
+        })[char]);
+      }
+    })();
+  </script>
+</body>
+</html>

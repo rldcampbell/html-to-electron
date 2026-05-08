@@ -1,0 +1,45 @@
+const path = require("node:path");
+const { app, BrowserWindow } = require("electron");
+
+const APP_HTML = path.join(__dirname, "app", "index.html");
+
+function createWindow() {
+  const win = new BrowserWindow({
+    width: __WINDOW_WIDTH__,
+    height: __WINDOW_HEIGHT__,
+    minWidth: __WINDOW_MIN_WIDTH__,
+    minHeight: __WINDOW_MIN_HEIGHT__,
+    backgroundColor: "#ffffff",
+    autoHideMenuBar: true,
+    show: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true
+    }
+  });
+
+  win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+
+  win.once("ready-to-show", () => {
+    win.show();
+  });
+
+  win.loadFile(APP_HTML);
+}
+
+app.whenReady().then(() => {
+  createWindow();
+
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});

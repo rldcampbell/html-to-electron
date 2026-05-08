@@ -1,0 +1,18 @@
+{
+  "name": "__PACKAGE_NAME__",
+  "productName": "__PRODUCT_NAME__",
+  "version": "__VERSION__",
+  "description": "__DESCRIPTION__",
+  "author": "__AUTHOR__",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "__ELECTRON_FORGE_VERSION__",
+__OPTIONAL_MAKER_DEPENDENCIES__    "electron": "__ELECTRON_VERSION__"
+  }
+}

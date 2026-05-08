@@ -1,0 +1,34 @@
+# __PRODUCT_NAME__
+
+This Electron app wraps `app/index.html` as a standalone macOS desktop app.
+
+## Development
+
+```bash
+__INSTALL_COMMAND__
+__START_COMMAND__
+```
+
+## Package a macOS .app
+
+```bash
+__PACKAGE_COMMAND__
+```
+
+The packaged app appears under `out/`.
+
+## Make Distributables
+
+```bash
+__MAKE_COMMAND__
+```
+
+By default this creates a macOS ZIP under `out/make/`.
+
+If this project was generated with DMG support, `__MAKE_COMMAND__` also creates a `.dmg`.
+
+## Signing And Notarization
+
+Unsigned local builds are useful for personal use and testing.
+
+For distribution to other Macs, configure Apple Developer code signing and notarization.
